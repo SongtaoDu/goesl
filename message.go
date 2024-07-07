@@ -56,7 +56,7 @@ func (m *Message) Parse() error {
 	}
 
 	if cmr.Get("Content-Type") == "" {
-		Debug("Not accepting message because of empty content type. Just whatever with it ...")
+		Info("Not accepting message because of empty content type. Just whatever with it ...")
 		return fmt.Errorf("Parse EOF")
 	}
 
@@ -80,7 +80,7 @@ func (m *Message) Parse() error {
 
 	msgType := cmr.Get("Content-Type")
 
-	Debug("Got message content (type: %s). Searching if we can handle it ...", msgType)
+	Info("Got message content (type: %s). Searching if we can handle it ...", msgType)
 
 	if !StringInSlice(msgType, AvailableMessageTypes) {
 		return fmt.Errorf(EUnsupportedMessageType, msgType, AvailableMessageTypes)
@@ -107,7 +107,7 @@ func (m *Message) Parse() error {
 	switch msgType {
 	case "text/disconnect-notice":
 		for k, v := range cmr {
-			Debug("Message (header: %s) -> (value: %v)", k, v)
+			Info("Message (header: %s) -> (value: %v)", k, v)
 		}
 	case "command/reply":
 		reply := cmr.Get("Reply-Text")
