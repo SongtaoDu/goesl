@@ -57,7 +57,7 @@ func (c *Client) setReconnecting(state bool) {
 func (c *Client) startHeartbeat() {
 	c.stopHeartbeat = make(chan struct{})
 	go func() {
-		ticker := time.NewTicker(120 * time.Second)
+		ticker := time.NewTicker(30 * time.Second)
 		defer ticker.Stop()
 
 		for {
