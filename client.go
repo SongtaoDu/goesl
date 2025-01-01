@@ -84,7 +84,7 @@ func (c *Client) reconnect() {
 	defer c.setReconnecting(false)
 
 	retryDelay := time.Second * 5
-	attempt := 1
+	attempt := 1000
 
 	for !c.isConnected() {
 		Debug("Reconnection attempt %d...", attempt)
