@@ -83,33 +83,26 @@ func (c *Client) reconnect() {
 	c.setReconnecting(true)
 	defer c.setReconnecting(false)
 
-	retryDelay := time.Second * 5
-	attempt := 1000
-
 	for !c.isConnected() {
-		Debug("Reconnection attempt %d...", attempt)
+		Debug("Attempting immediate reconnection...")
 
 		// 关闭旧连接
 		c.Close()
 
-		// 重新建立连接
+		// 立即尝试重新建立连接
 		if err := c.EstablishConnection(); err != nil {
 			Debug("Connection failed: %v", err)
-			time.Sleep(retryDelay)
-			attempt++
-			continue
+			continue  // 立即重试，不等待
 		}
 
 		// 重新认证
 		if err := c.Authenticate(); err != nil {
 			Debug("Authentication failed: %v", err)
-			time.Sleep(retryDelay)
-			attempt++
-			continue
+			continue  // 立即重试，不等待
 		}
 
 		c.setConnected(true)
-		Debug("Successfully reconnected after %d attempts", attempt)
+		Debug("Successfully reconnected")
 
 		// 重新启动心跳检测
 		c.startHeartbeat()
@@ -206,11 +199,16 @@ func NewClient(host string, port uint, passwd string, timeout int) (*Client, err
 
 // Close - Will close the connection to freeswitch server
 func (c *Client) Close() error {
-	if c.stopHeartbeat != nil {
-		close(c.stopHeartbeat)
+	// 只在确实需要关闭时才完全关闭
+	if c.isConnected() {
+		if c.stopHeartbeat != nil {
+			close(c.stopHeartbeat)
+			c.stopHeartbeat = nil
+		}
+		c.setConnected(false)
+		return c.SocketConnection.Close()
 	}
-	c.connected = false
-	return c.SocketConnection.Close()
+	return nil
 }
 
 // Read - Will read data from freeswitch server
